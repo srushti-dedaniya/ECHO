@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-background text-on-surface font-body-md text-body-md antialiased;
+    overscroll-behavior: none;
+  }
+  
+  ::selection {
+    @apply bg-primary-container text-on-primary-container;
+  }
+  
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    @apply border-outline-variant;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-container-low/70 backdrop-blur-2xl;
+  }
+  
+  .glass-strong {
+    @apply bg-surface-container-low/90 backdrop-blur-3xl;
+  }
+  
+  .glass-card {
+    @apply bg-surface-container-low/80 backdrop-blur-xl shadow-2xl;
+  }
+  
+  .orb-glow {
+    @apply absolute inset-0 rounded-full blur-[80px] animate-pulse;
+  }
+  
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary via-primary-fixed to-secondary bg-clip-text text-transparent;
+  }
+  
+  .btn-primary {
+    @apply px-space-2xl py-space-md rounded-full bg-primary-container text-on-primary-container font-headline-sm text-headline-sm shadow-[0_0_35px_rgba(56,189,248,0.45)] hover:shadow-[0_0_55px_rgba(56,189,248,0.75)] hover:scale-105 transition-all;
+  }
+  
+  .btn-secondary {
+    @apply px-space-xl py-space-md rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest text-on-surface font-headline-sm text-headline-sm backdrop-blur-xl transition-all hover:scale-105;
+  }
+  
+  .pill {
+    @apply px-space-md py-space-xs rounded-full;
+  }
+  
+  .pill-active {
+    @apply bg-primary-container text-on-primary-container;
+  }
+  
+  .pill-inactive {
+    @apply bg-surface-container-high/80 text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface;
+  }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+  
+  .animate-spin-reverse {
+    animation: spin 15s linear infinite reverse;
+  }
+  
+  .animate-ping-slow {
+    animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  @keyframes ping {
+    75%, 100% { transform: scale(2); opacity: 0; }
+  }
+}
