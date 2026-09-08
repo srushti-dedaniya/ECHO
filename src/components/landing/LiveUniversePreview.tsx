@@ -83,8 +83,8 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
                     </div>
                     
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      initial={{ scale: 0.8, y: 10 }}
+                      animate={{ scale: 1, y: 0 }}
                       className="absolute z-20 w-80 opacity-0 group-hover:opacity-100 transition-all duration-300"
                       style={{
                         left: index < 2 ? '50%' : 'auto',
