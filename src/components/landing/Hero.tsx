@@ -12,7 +12,7 @@ export function Hero({ className = '', onEnterEcho, onExploreUniverse }: HeroPro
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className={`relative min-h-[942px] flex flex-col justify-center items-center px-viewport-inset py-space-3xl overflow-hidden ${className}`}
+      className={`relative min-h-[942px] flex flex-col justify-center items-center px-viewport-inset py-space-3xl overflow-hidden ${className} pt-20`}
     >
       <motion.svg
         initial={{ opacity: 0 }}

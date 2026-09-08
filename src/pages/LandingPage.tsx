@@ -33,7 +33,7 @@ export function LandingPage() {
   return (
     <div className="flex flex-col w-full">
       {/* Public Header with Login/Register */}
-      <header className="fixed top-0 left-0 right-0 z-40 px-viewport-inset pt-space-sm pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-40 px-viewport-inset pt-space-sm">
         <div className="max-w-7xl mx-auto pointer-events-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-space-sm group" onClick={handleEnterEcho}>
             <motion.span

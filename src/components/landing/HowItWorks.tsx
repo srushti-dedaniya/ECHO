@@ -29,7 +29,7 @@ const steps = [
     number: '04',
     title: 'LEAVE A TRACE',
     description: 'Become part of a temporary collective memory',
-    icon: 'trail_sign',
+    icon: 'footprint',
     color: 'primary-fixed',
     gradient: 'from-primary/20 to-primary-fixed/20',
   },

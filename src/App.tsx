@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { EchoProvider } from './context/EchoContext'
 import { UserProvider } from './context/UserContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -18,75 +18,79 @@ import { GlobalTelemetry } from './components/common/GlobalTelemetry'
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return null;
   }
 
+  const showTelemetry = isAuthenticated && location.pathname !== '/';
+
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/universe" replace /> : <LoginPage />} />
-      <Route path="/register" element={isAuthenticated ? <Navigate to="/universe" replace /> : <RegisterPage />} />
-      
-      <Route
-        path="/onboarding"
-        element={
-          <ProtectedRoute>
-            <OnboardingPage />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/universe"
-        element={
-          <ProtectedRoute>
-            <UniversePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/echo/:id"
-        element={
-          <ProtectedRoute>
-            <EchoRoomPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/release"
-        element={
-          <ProtectedRoute>
-            <ReleaseMomentPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/moments"
-        element={
-          <ProtectedRoute>
-            <MomentsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/universe" replace /> : <LoginPage />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/universe" replace /> : <RegisterPage />} />
+        
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/universe"
+          element={
+            <ProtectedRoute>
+              <UniversePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/echo/:id"
+          element={
+            <ProtectedRoute>
+              <EchoRoomPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/release"
+          element={
+            <ProtectedRoute>
+              <ReleaseMomentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/moments"
+          element={
+            <ProtectedRoute>
+              <MomentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      {showTelemetry && <GlobalTelemetry />}
+    </>
   );
 }
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuth();
-
   return (
     <AuthProvider>
       <UserProvider>
@@ -95,7 +99,6 @@ function App() {
             <BrowserRouter>
               <Navigation />
               <AppRoutes />
-              {!isLoading && isAuthenticated && <GlobalTelemetry />}
             </BrowserRouter>
           </ToastProvider>
         </EchoProvider>

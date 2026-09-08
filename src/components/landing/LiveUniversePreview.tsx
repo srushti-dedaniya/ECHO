@@ -29,14 +29,14 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
             </p>
           </div>
 
-          <div className="relative w-full lg:w-96 aspect-square rounded-2xl bg-surface-container-low/60 flex items-center justify-center p-space-md overflow-hidden">
+          <div className="relative w-full lg:w-[500px] aspect-square rounded-2xl bg-surface-container-low/60 flex items-center justify-center p-space-xl overflow-visible">
             <motion.div
-              className="relative flex items-center justify-center w-20 h-20 rounded-full bg-primary-container/20 text-primary"
+              className="relative flex items-center justify-center w-24 h-24 rounded-full bg-primary-container/20 text-primary"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
               <motion.div
-                className="w-10 h-10 rounded-full bg-primary-container shadow-[0_0_24px_rgba(56,189,248,0.8)]"
+                className="w-12 h-12 rounded-full bg-primary-container shadow-[0_0_24px_rgba(56,189,248,0.8)]"
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
@@ -50,7 +50,7 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
             {previewEchoes.map((echo, index) => {
               const mood = moodConfig[echo.mood];
               const angle = (index / previewEchoes.length) * Math.PI * 2;
-              const radius = 140;
+              const radius = 180;
               return (
                 <motion.div
                   key={echo.id}
@@ -68,24 +68,33 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
                 >
                   <motion.button
                     onClick={onExplore}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     className="relative flex items-center justify-center"
                   >
-                    <div className="absolute -inset-3 rounded-full blur-xl opacity-40" style={{ backgroundColor: mood?.color }} />
+                    <div className="absolute -inset-4 rounded-full blur-xl opacity-40" style={{ backgroundColor: mood?.color }} />
                     <div className={`
-                      relative w-16 h-16 rounded-full backdrop-blur-xl p-[1px] flex items-center justify-center
-                      shadow-[0_0_20px_rgba(0,0,0,0.5)]
-                    `} style={{ boxShadow: `0 0 20px ${mood?.color}40` }}>
+                      relative w-20 h-20 rounded-full backdrop-blur-xl p-[1px] flex items-center justify-center
+                      shadow-[0_0_24px_rgba(0,0,0,0.5)]
+                    `} style={{ boxShadow: `0 0 24px ${mood?.color}40` }}>
                       <div className="w-full h-full rounded-full bg-surface-container-lowest/80 flex items-center justify-center">
-                        <span className="text-xl">{mood?.emoji}</span>
+                        <span className="text-2xl">{mood?.emoji}</span>
                       </div>
                     </div>
                     
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
+                      className="absolute z-20 w-72 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      style={{
+                        left: index < 2 ? '50%' : 'auto',
+                        right: index >= 2 ? '50%' : 'auto',
+                        transform: index < 2 ? 'translateX(-50%)' : 'translateX(50%)',
+                        top: index < 3 ? '100%' : 'auto',
+                        bottom: index >= 3 ? '100%' : 'auto',
+                        marginTop: index < 3 ? '8px' : '0',
+                        marginBottom: index >= 3 ? '8px' : '0',
+                      }}
                     >
                       <div className="p-3 rounded-xl glass-strong shadow-2xl">
                         <p className="font-body-sm text-body-sm text-on-surface mb-2 font-medium">{echo.content.slice(0, 40)}...</p>
