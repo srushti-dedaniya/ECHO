@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { mockEchoes } from '../../data/echoes';
 import { moods } from '../../types/mood';
@@ -12,6 +13,8 @@ interface LiveUniversePreviewProps {
 const previewEchoes = mockEchoes.slice(0, 5);
 
 export function LiveUniversePreview({ onExplore, className = '' }: LiveUniversePreviewProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -67,7 +70,10 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
                   transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: index * 0.5 }}
                 >
                   <motion.button
-                    onClick={onExplore}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedIndex(selectedIndex === index ? null : index);
+                    }}
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     className="relative flex items-center justify-center"
@@ -82,28 +88,30 @@ export function LiveUniversePreview({ onExplore, className = '' }: LiveUniverseP
                       </div>
                     </div>
                     
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      className="absolute z-20 w-72 opacity-0 group-hover:opacity-100 transition-all duration-300"
-                      style={{
-                        left: index < 2 ? '50%' : 'auto',
-                        right: index >= 2 ? '50%' : 'auto',
-                        transform: index < 2 ? 'translateX(-50%)' : 'translateX(50%)',
-                        top: index < 3 ? '100%' : 'auto',
-                        bottom: index >= 3 ? '100%' : 'auto',
-                        marginTop: index < 3 ? '8px' : '0',
-                        marginBottom: index >= 3 ? '8px' : '0',
-                      }}
-                    >
-                      <div className="p-3 rounded-xl glass-strong shadow-2xl">
-                        <p className="font-body-sm text-body-sm text-on-surface mb-2 font-medium">{echo.content.slice(0, 40)}...</p>
-                        <div className="flex items-center justify-between text-xs text-on-surface-variant">
-                          <span>{echo.resonance.resonate + echo.resonance.signal + echo.resonance.hold + echo.resonance.ripple} souls inside</span>
-                          <span className="text-primary font-medium">Enter →</span>
+                    {selectedIndex === index && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="absolute z-20 w-72"
+                        style={{
+                          left: index < 2 ? '50%' : 'auto',
+                          right: index >= 2 ? '50%' : 'auto',
+                          transform: index < 2 ? 'translateX(-50%)' : 'translateX(50%)',
+                          top: index < 3 ? '100%' : 'auto',
+                          bottom: index >= 3 ? '100%' : 'auto',
+                          marginTop: index < 3 ? '8px' : '0',
+                          marginBottom: index >= 3 ? '8px' : '0',
+                        }}
+                      >
+                        <div className="p-3 rounded-xl glass-strong shadow-2xl">
+                          <p className="font-body-sm text-body-sm text-on-surface mb-2 font-medium">{echo.content.slice(0, 40)}...</p>
+                          <div className="flex items-center justify-between text-xs text-on-surface-variant">
+                            <span>{echo.resonance.resonate + echo.resonance.signal + echo.resonance.hold + echo.resonance.ripple} souls inside</span>
+                            <span className="text-primary font-medium">Enter →</span>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    )}
                   </motion.button>
                 </motion.div>
               );
