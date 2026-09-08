@@ -7,6 +7,7 @@ interface UserContextType {
   updateMood: (mood: MoodType) => void;
   updateIntent: (intent: IntentType) => void;
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
+  updateProfile: (data: Partial<Pick<User, 'name' | 'username' | 'email' | 'alias' | 'avatarColor'>>) => void;
   addTrailEcho: (trail: User['trail'][0]) => void;
   addConstellation: (constellation: User['constellations'][0]) => void;
   isOnboarded: boolean;
@@ -85,6 +86,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } : null);
   };
 
+  const updateProfile = (data: Partial<Pick<User, 'name' | 'username' | 'email' | 'alias' | 'avatarColor'>>) => {
+    setUser(prev => prev ? {
+      ...prev,
+      ...data,
+      lastActive: Date.now()
+    } : null);
+  };
+
   const completeOnboarding = () => {
     const newUser: User = {
       id: generateId(),
@@ -115,6 +124,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       updateMood,
       updateIntent,
       updatePreferences,
+      updateProfile,
       addTrailEcho,
       addConstellation,
       isOnboarded,

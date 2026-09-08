@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -207,6 +208,49 @@ export function ProfilePage() {
           className="bg-surface-container-low/60 backdrop-blur-xl rounded-2xl p-space-md shadow-xl border border-outline/10"
         >
           <h3 className="font-headline-sm text-headline-sm text-on-surface mb-space-md flex items-center gap-space-sm">
+            <span className="material-symbols-outlined text-tertiary text-[20px]">person</span>
+            Profile Settings
+          </h3>
+          <div className="space-y-space-md">
+            <div>
+              <label className="font-label-sm text-label-sm text-on-surface-variant block mb-1">Name</label>
+              <input
+                type="text"
+                defaultValue={user.name}
+                onBlur={(e) => updateProfile({ name: e.target.value })}
+                className="w-full px-space-md py-space-sm rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl border border-outline/20 text-on-surface placeholder-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="font-label-sm text-label-sm text-on-surface-variant block mb-1">Username</label>
+              <input
+                type="text"
+                defaultValue={user.username}
+                onBlur={(e) => updateProfile({ username: e.target.value })}
+                className="w-full px-space-md py-space-sm rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl border border-outline/20 text-on-surface placeholder-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="font-label-sm text-label-sm text-on-surface-variant block mb-1">Email</label>
+              <input
+                type="email"
+                defaultValue={user.email}
+                onBlur={(e) => updateProfile({ email: e.target.value })}
+                className="w-full px-space-md py-space-sm rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl border border-outline/20 text-on-surface placeholder-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="font-label-sm text-label-sm text-on-surface-variant block mb-1">Alias</label>
+              <input
+                type="text"
+                defaultValue={user.alias}
+                onBlur={(e) => updateProfile({ alias: e.target.value })}
+                className="w-full px-space-md py-space-sm rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl border border-outline/20 text-on-surface placeholder-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <h3 className="font-headline-sm text-headline-sm text-on-surface mt-space-lg mb-space-md flex items-center gap-space-sm">
             <span className="material-symbols-outlined text-tertiary text-[20px]">settings</span>
             Preferences
           </h3>
