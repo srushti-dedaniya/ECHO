@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -7,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useEcho } from '../context/EchoContext';
 
 export function ProfilePage() {
-  const { user, updatePreferences } = useUser();
+  const { user, updatePreferences, updateProfile } = useUser();
   const { logout } = useAuth();
   const { myEchoes } = useEcho();
 
