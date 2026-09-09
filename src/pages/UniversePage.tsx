@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEcho } from '../context/EchoContext';
 import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 import { mockEchoes } from '../data/echoes';
 import { UniverseCanvas } from '../components/universe/UniverseCanvas';
 import { SocialWeather, LivePulse } from '../components/universe/SocialWeather';
@@ -13,6 +14,7 @@ export function UniversePage() {
   const navigate = useNavigate();
   const { activeEchoes, setCurrentRoom, newlyCreatedEchoId, setNewlyCreatedEchoId } = useEcho();
   const { user } = useUser();
+  const { logout } = useAuth();
   const [selectedMood, setSelectedMood] = useState<'all' | string>('all');
   const [isDepthEnabled, setIsDepthEnabled] = useState(false);
   const [isFilamentsEnabled, setIsFilamentsEnabled] = useState(true);
@@ -143,6 +145,17 @@ export function UniversePage() {
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
             <span>+ RELEASE A MOMENT</span>
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { logout(); navigate('/'); }}
+            className="hidden md:flex items-center gap-space-xs px-space-md py-space-md rounded-full bg-secondary-container/20 text-secondary hover:bg-secondary-container/40 transition-all font-label-sm text-label-sm"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span>Logout</span>
           </motion.button>
         </motion.div>
       </div>
