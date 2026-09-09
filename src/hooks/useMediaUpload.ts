@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { validateImageFile, createObjectUrl, revokeObjectUrl } from '../utils/safeStorage';
 
 export interface UploadedFile {
   id: string;
@@ -15,36 +16,54 @@ export function useMediaUpload() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const generatePreview = useCallback((file: File): string => {
-    return URL.createObjectURL(file);
-  }, []);
+  useEffect(() => {
+    return () => {
+      files.forEach(f => revokeObjectUrl(f.preview));
+    };
+  }, [files]);
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
-    const uploadedFiles: UploadedFile[] = Array.from(newFiles).map(file => {
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+    
+    Array.from(newFiles).forEach(file => {
+      const validation = validateImageFile(file);
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        errors.push(`${file.name}: ${validation.error}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      console.warn('File validation errors:', errors);
+    }
+
+    const uploadedFiles: UploadedFile[] = validFiles.map(file => {
       const type = file.type.startsWith('image/') ? 'image' : 
                    file.type.startsWith('audio/') ? 'audio' : 'video';
       return {
         id: Math.random().toString(36).substring(2, 11),
         file,
-        preview: generatePreview(file),
+        preview: createObjectUrl(file),
         type,
         progress: 0,
         status: 'pending' as const,
       };
     });
     setFiles(prev => [...prev, ...uploadedFiles]);
-  }, [generatePreview]);
+  }, []);
 
   const removeFile = useCallback((id: string) => {
     setFiles(prev => {
       const file = prev.find(f => f.id === id);
-      if (file) URL.revokeObjectURL(file.preview);
+      if (file) revokeObjectUrl(file.preview);
       return prev.filter(f => f.id !== id);
     });
   }, []);
 
   const clearFiles = useCallback(() => {
-    files.forEach(f => URL.revokeObjectURL(f.preview));
+    files.forEach(f => revokeObjectUrl(f.preview));
     setFiles([]);
   }, [files]);
 

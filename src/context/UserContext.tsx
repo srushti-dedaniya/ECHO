@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { User, MoodType, IntentType, UserPreferences } from '../types/user';
+import { safeGetItem, safeSetItem, safeObjectOrNull } from '../utils/safeStorage';
 
 interface UserContextType {
   user: User | null;
@@ -33,37 +34,42 @@ function generateId() {
   return Math.random().toString(36).substring(2, 15);
 }
 
-export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem('echo-user');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
-      }
-    }
+function loadStoredUser(): User | null {
+  const stored = safeGetItem<string>('echo-user', '');
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    return safeObjectOrNull(parsed, null) as User | null;
+  } catch {
     return null;
-  });
+  }
+}
+
+export function UserProvider({ children }: { children: ReactNode }) {
+  const [user, setUserState] = useState<User | null>(loadStoredUser);
 
   const isOnboarded = !!user;
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem('echo-user', JSON.stringify(user));
+      safeSetItem('echo-user', user);
     }
   }, [user]);
 
+  const setUser = (newUser: User | null) => {
+    setUserState(newUser);
+  };
+
   const updateMood = (mood: MoodType) => {
-    setUser(prev => prev ? { ...prev, currentMood: mood, lastActive: Date.now() } : null);
+    setUserState(prev => prev ? { ...prev, currentMood: mood, lastActive: Date.now() } : null);
   };
 
   const updateIntent = (intent: IntentType) => {
-    setUser(prev => prev ? { ...prev, currentIntent: intent, lastActive: Date.now() } : null);
+    setUserState(prev => prev ? { ...prev, currentIntent: intent, lastActive: Date.now() } : null);
   };
 
   const updatePreferences = (prefs: Partial<UserPreferences>) => {
-    setUser(prev => prev ? {
+    setUserState(prev => prev ? {
       ...prev,
       preferences: { ...prev.preferences, ...prefs },
       lastActive: Date.now()
@@ -71,7 +77,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const addTrailEcho = (trail: User['trail'][0]) => {
-    setUser(prev => prev ? {
+    setUserState(prev => prev ? {
       ...prev,
       trail: [trail, ...prev.trail].slice(0, 50),
       lastActive: Date.now()
@@ -79,7 +85,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const addConstellation = (constellation: User['constellations'][0]) => {
-    setUser(prev => prev ? {
+    setUserState(prev => prev ? {
       ...prev,
       constellations: [constellation, ...prev.constellations],
       lastActive: Date.now()
@@ -87,7 +93,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = (data: Partial<Pick<User, 'name' | 'username' | 'email' | 'alias' | 'avatarColor'>>) => {
-    setUser(prev => prev ? {
+    setUserState(prev => prev ? {
       ...prev,
       ...data,
       lastActive: Date.now()
@@ -113,14 +119,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
   };
 
-  const setUserDirect = (newUser: User | null) => {
-    setUser(newUser);
-  };
-
   return (
     <UserContext.Provider value={{
       user,
-      setUser: setUserDirect,
+      setUser,
       updateMood,
       updateIntent,
       updatePreferences,

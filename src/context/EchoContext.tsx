@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Echo, EchoRoom, Contribution } from '../types/echo';
 import { mockEchoes } from '../data/echoes';
+import { safeGetItem, safeSetItem, validateEchoArray } from '../utils/safeStorage';
 
 interface EchoContextType {
   currentRoom: EchoRoom | null;
@@ -16,33 +17,26 @@ interface EchoContextType {
   setNewlyCreatedEchoId: (id: string | null) => void;
 }
 
-
 const EchoContext = createContext<EchoContextType | undefined>(undefined);
+
+function loadCustomEchoes(): Echo[] {
+  const custom = safeGetItem<Echo[]>('echo-custom-echoes', []);
+  return validateEchoArray([...custom, ...mockEchoes]);
+}
+
+function loadMyEchoes(): Echo[] {
+  return validateEchoArray(safeGetItem<Echo[]>('echo-my-created-echoes', []));
+}
 
 export function EchoProvider({ children }: { children: ReactNode }) {
   const [currentRoom, setCurrentRoom] = useState<EchoRoom | null>(null);
   const [newlyCreatedEchoId, setNewlyCreatedEchoId] = useState<string | null>(null);
   
-  // Load custom user created echoes from localStorage
-  const [activeEchoes, setActiveEchoes] = useState<Echo[]>(() => {
-    const stored = localStorage.getItem('echo-custom-echoes');
-    let custom: Echo[] = [];
-    if (stored) {
-      try { custom = JSON.parse(stored); } catch { custom = []; }
-    }
-    return [...custom, ...mockEchoes];
-  });
-
-  const [myEchoes, setMyEchoes] = useState<Echo[]>(() => {
-    const stored = localStorage.getItem('echo-my-created-echoes');
-    if (stored) {
-      try { return JSON.parse(stored); } catch { return []; }
-    }
-    return [];
-  });
+  const [activeEchoes, setActiveEchoes] = useState<Echo[]>(loadCustomEchoes);
+  const [myEchoes, setMyEchoes] = useState<Echo[]>(loadMyEchoes);
 
   useEffect(() => {
-    localStorage.setItem('echo-my-created-echoes', JSON.stringify(myEchoes));
+    safeSetItem('echo-my-created-echoes', myEchoes);
   }, [myEchoes]);
 
   const addEcho = (echo: Echo) => {
@@ -50,13 +44,8 @@ export function EchoProvider({ children }: { children: ReactNode }) {
     setMyEchoes(prev => [echo, ...prev]);
     setNewlyCreatedEchoId(echo.id);
 
-    // Save custom echo to local storage
-    const stored = localStorage.getItem('echo-custom-echoes');
-    let custom: Echo[] = [];
-    if (stored) {
-      try { custom = JSON.parse(stored); } catch { custom = []; }
-    }
-    localStorage.setItem('echo-custom-echoes', JSON.stringify([echo, ...custom]));
+    const custom = safeGetItem<Echo[]>('echo-custom-echoes', []);
+    safeSetItem('echo-custom-echoes', [echo, ...custom]);
   };
 
   const removeEcho = (id: string) => {
@@ -91,15 +80,9 @@ export function EchoProvider({ children }: { children: ReactNode }) {
         contributions: updatedContributions,
       });
 
-      // Save to localStorage per echoId
       const storedKey = `echo-room-contribs-${echoId}`;
-      const existingStr = localStorage.getItem(storedKey);
-      let existing: Contribution[] = [];
-      if (existingStr) {
-        try { existing = JSON.parse(existingStr); } catch { existing = []; }
-      }
-
-      localStorage.setItem(storedKey, JSON.stringify([...existing, contribution]));
+      const existing = safeGetItem<Contribution[]>(storedKey, []);
+      safeSetItem(storedKey, [...existing, contribution]);
     }
   };
 

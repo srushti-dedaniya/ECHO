@@ -126,6 +126,15 @@ export function MediaUploader({ onFilesChange, className = '' }: MediaUploaderPr
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => handleFileClick('image')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleFileClick('image');
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label="Upload media files"
       >
         <input
           ref={fileInputRef}

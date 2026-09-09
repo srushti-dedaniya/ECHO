@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { User } from '../types/user';
+import { safeGetItem, safeSetItem, safeRemoveItem, safeObjectOrNull } from '../utils/safeStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,22 @@ interface RegisterData {
   confirmPassword?: string;
 }
 
+interface StoredUser {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+  password?: string;
+  alias?: string;
+  avatarColor?: string;
+  currentMood?: string;
+  currentIntent?: string;
+  trail?: User['trail'];
+  constellations?: User['constellations'];
+  preferences?: User['preferences'];
+  createdAt?: number;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const avatarColors = [
@@ -38,22 +55,23 @@ function getRandomAvatarColor() {
   return avatarColors[Math.floor(Math.random() * avatarColors.length)];
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<User | null>(() => {
-    const stored = localStorage.getItem('echo-auth-user');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
-      }
-    }
+function loadStoredUser(): User | null {
+  const stored = safeGetItem<string>('echo-auth-user', '');
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    return safeObjectOrNull(parsed, null) as User | null;
+  } catch {
     return null;
-  });
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUserState] = useState<User | null>(loadStoredUser);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('echo-auth-user');
+    const stored = safeGetItem<string>('echo-auth-user', '');
     if (stored) {
       try {
         setUserState(JSON.parse(stored));
@@ -67,11 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setUser = (newUser: User | null) => {
     setUserState(newUser);
     if (newUser) {
-      localStorage.setItem('echo-auth-user', JSON.stringify(newUser));
-      localStorage.setItem('echo-user', JSON.stringify(newUser));
+      safeSetItem('echo-auth-user', newUser);
+      safeSetItem('echo-user', newUser);
     } else {
-      localStorage.removeItem('echo-auth-user');
-      localStorage.removeItem('echo-user');
+      safeRemoveItem('echo-auth-user');
+      safeRemoveItem('echo-user');
     }
   };
 
@@ -79,13 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const stored = localStorage.getItem('echo-registered-users');
-    let usersList: any[] = [];
-    if (stored) {
-      try { usersList = JSON.parse(stored); } catch { usersList = []; }
-    }
-
+    const usersList = safeGetItem<StoredUser[]>('echo-registered-users', []);
     const matched = usersList.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
     if (matched) {
       if (password && matched.password && matched.password !== password) {
         setIsLoading(false);
@@ -98,8 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: matched.email,
         alias: matched.alias || `Soul #${Math.floor(Math.random() * 9000) + 1000}`,
         avatarColor: matched.avatarColor || getRandomAvatarColor(),
-        currentMood: matched.currentMood || 'nostalgic',
-        currentIntent: matched.currentIntent || 'understanding',
+        currentMood: (matched.currentMood as User['currentMood']) || 'nostalgic',
+        currentIntent: (matched.currentIntent as User['currentIntent']) || 'understanding',
         trail: matched.trail || [],
         constellations: matched.constellations || [],
         preferences: {
@@ -122,7 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Fallback for mock demo user if no match found
     const newUser: User = {
       id: generateId(),
       name: email.split('@')[0] || 'Cosmic Traveler',
@@ -157,11 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 600));
 
-    const stored = localStorage.getItem('echo-registered-users');
-    let usersList: any[] = [];
-    if (stored) {
-      try { usersList = JSON.parse(stored); } catch { usersList = []; }
-    }
+    const usersList = safeGetItem<StoredUser[]>('echo-registered-users', []);
 
     if (usersList.some(u => u.email.toLowerCase() === data.email.toLowerCase())) {
       setIsLoading(false);
@@ -172,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Username is already taken');
     }
 
-    const newUserObj = {
+    const newUserObj: StoredUser = {
       id: generateId(),
       name: data.name,
       username: data.username,
@@ -185,15 +194,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     usersList.push(newUserObj);
-    localStorage.setItem('echo-registered-users', JSON.stringify(usersList));
+    safeSetItem('echo-registered-users', usersList);
 
     const newUser: User = {
       id: newUserObj.id,
       name: newUserObj.name,
       username: newUserObj.username,
       email: newUserObj.email,
-      alias: newUserObj.alias,
-      avatarColor: newUserObj.avatarColor,
+      alias: newUserObj.alias || `Soul #${Math.floor(Math.random() * 9000) + 1000}`,
+      avatarColor: newUserObj.avatarColor || getRandomAvatarColor(),
       currentMood: 'nostalgic',
       currentIntent: 'understanding',
       trail: [],
@@ -210,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           weeklyTelemetry: false,
         },
       },
-      createdAt: newUserObj.createdAt,
+      createdAt: newUserObj.createdAt || Date.now(),
       lastActive: Date.now(),
     };
 
@@ -220,10 +229,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('echo-onboarded');
-    localStorage.removeItem('echo-mood');
-    localStorage.removeItem('echo-intent');
-    localStorage.removeItem('echo-has-seen-universe-guide');
+    safeRemoveItem('echo-onboarded');
+    safeRemoveItem('echo-mood');
+    safeRemoveItem('echo-intent');
+    safeRemoveItem('echo-has-seen-universe-guide');
   };
 
   const demoLogin = () => {

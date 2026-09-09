@@ -4,6 +4,7 @@ import { useEcho } from '../../context/EchoContext';
 import { useUser } from '../../context/UserContext';
 import { moods } from '../../types/mood';
 import { globalTelemetry, socialWeather } from '../../data/socialWeather';
+import { safeGetItem, safeSetItem } from '../../utils/safeStorage';
 
 const moodConfig = moods.reduce((acc, m) => ({ ...acc, [m.id]: m }), {} as Record<string, typeof moods[0]>);
 
@@ -25,6 +26,7 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
   const [hasInitialized, setHasInitialized] = useState(false);
   const consoleRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([null, null, null]);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
 
   const liveEchoes = useMemo(() => activeEchoes.filter(e => e.expiresAt > Date.now()).slice(0, 5), [activeEchoes]);
@@ -36,19 +38,19 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
   const userIntent = user?.currentIntent || 'understanding';
 
   useEffect(() => {
-    const savedPos = localStorage.getItem('universeConsolePosition');
-    const savedMin = localStorage.getItem('universeConsoleMinimized');
-    const savedHidden = localStorage.getItem('universeConsoleHidden');
+    const savedPos = safeGetItem<{x: number; y: number}>('universeConsolePosition', { x: 0, y: 0 });
+    const savedMin = safeGetItem<boolean>('universeConsoleMinimized', false);
+    const savedHidden = safeGetItem<boolean>('universeConsoleHidden', false);
     
-    if (savedPos) {
-      try { setPosition(JSON.parse(savedPos)); } catch {}
+    if (savedPos.x || savedPos.y) {
+      setPosition(savedPos);
     }
-    if (savedMin) { setIsMinimized(JSON.parse(savedMin)); }
-    if (savedHidden) { setIsHidden(JSON.parse(savedHidden)); }
+    setIsMinimized(savedMin);
+    setIsHidden(savedHidden);
     
-    if (!savedPos && !isMobile) {
+    if ((!savedPos.x && !savedPos.y) && !isMobile) {
       setPosition({ x: window.innerWidth - 380, y: 24 });
-    } else if (!savedPos && isMobile) {
+    } else if ((!savedPos.x && !savedPos.y) && isMobile) {
       setPosition({ x: 16, y: window.innerHeight - 400 });
     }
     setHasInitialized(true);
@@ -56,21 +58,29 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
 
   useEffect(() => {
     if (hasInitialized) {
-      localStorage.setItem('universeConsolePosition', JSON.stringify(position));
+      safeSetItem('universeConsolePosition', position);
     }
   }, [position, hasInitialized]);
 
   useEffect(() => {
     if (hasInitialized) {
-      localStorage.setItem('universeConsoleMinimized', JSON.stringify(isMinimized));
+      safeSetItem('universeConsoleMinimized', isMinimized);
     }
   }, [isMinimized, hasInitialized]);
 
   useEffect(() => {
     if (hasInitialized) {
-      localStorage.setItem('universeConsoleHidden', JSON.stringify(isHidden));
+      safeSetItem('universeConsoleHidden', isHidden);
     }
   }, [isHidden, hasInitialized]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, tab: 'live' | 'mood' | 'signal') => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setActiveTab(tab);
+      setSelectedEchoId(null);
+    }
+  }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (isMobile) return;
@@ -242,11 +252,13 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
             </div>
           </div>
 
-          <div className="flex border-b border-outline/10">
-            {(['live', 'mood', 'signal'] as const).map((tab) => (
+          <div className="flex border-b border-outline/10" role="tablist" aria-label="Universe Console tabs">
+            {(['live', 'mood', 'signal'] as const).map((tab, index) => (
               <motion.button
                 key={tab}
+                ref={(el) => { tabRefs.current[index] = el; }}
                 onClick={() => handleTabClick(tab)}
+                onKeyDown={(e) => handleKeyDown(e, tab)}
                 whileTap={{ scale: 0.98 }}
                 className={`flex-1 px-3 py-2.5 text-center font-label-sm text-label-sm uppercase tracking-wider transition-colors relative ${
                   activeTab === tab
@@ -254,6 +266,10 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
                     : 'text-on-surface-variant hover:text-on-surface'
                 }`}
                 type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`panel-${tab}`}
+                id={`tab-${tab}`}
               >
                 {tab.toUpperCase()}
                 <motion.div
@@ -275,6 +291,9 @@ export function UniverseConsole({ onOrbSelect }: UniverseConsoleProps) {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
               className="p-4 space-y-4 max-h-[400px] overflow-y-auto"
+              role="tabpanel"
+              id={`panel-${activeTab}`}
+              aria-labelledby={`tab-${activeTab}`}
             >
               {activeTab === 'live' && (
                 <div className="space-y-3">

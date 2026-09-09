@@ -9,6 +9,7 @@ import { FollowMoments } from '../components/landing/FollowMoments';
 import { FinalCTA } from '../components/landing/FinalCTA';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { LiveUniversePreview } from '../components/landing/LiveUniversePreview';
+import { setupDemoMode, isDemoMode } from '../utils/demoMode';
 
 
 export function LandingPage() {
@@ -84,6 +85,26 @@ export function LandingPage() {
                 </span>
               </motion.button>
             </div>
+          )}
+
+          {/* Demo Mode Button for Hackathon Judges */}
+          {!isAuthenticated && !isDemoMode() && (
+            <motion.button
+              onClick={() => {
+                setupDemoMode();
+                navigate('/universe', { replace: true });
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="ml-space-sm px-space-md py-space-sm rounded-full bg-tertiary/20 text-tertiary border border-tertiary/30 font-label-sm text-label-sm uppercase tracking-wider backdrop-blur-xl transition-all hover:bg-tertiary/30 hover:scale-105"
+              type="button"
+              title="Quick demo access for judges - pre-populated universe with echoes, contributions, and resonance"
+            >
+              <span className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
+                <span>EXPLORE DEMO UNIVERSE</span>
+              </span>
+            </motion.button>
           )}
         </div>
       </header>
