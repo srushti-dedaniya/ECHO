@@ -5,8 +5,7 @@ import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { mockEchoes } from '../data/echoes';
 import { UniverseCanvas } from '../components/universe/UniverseCanvas';
-import { SocialWeather, LivePulse } from '../components/universe/SocialWeather';
-import { UniverseControls, SearchPortal } from '../components/universe/UniverseControls';
+import { UniverseConsole } from '../components/universe/UniverseConsole';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Echo } from '../types/echo';
 
@@ -15,12 +14,9 @@ export function UniversePage() {
   const { activeEchoes, setCurrentRoom, newlyCreatedEchoId, setNewlyCreatedEchoId } = useEcho();
   const { user } = useUser();
   const { logout } = useAuth();
-  const [selectedMood, setSelectedMood] = useState<'all' | string>('all');
-  const [isDepthEnabled, setIsDepthEnabled] = useState(false);
-  const [isFilamentsEnabled, setIsFilamentsEnabled] = useState(true);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [showGuidance, setShowGuidance] = useState(false);
   const [newEchoToast, setNewEchoToast] = useState(false);
+  const [highlightedEchoId, setHighlightedEchoId] = useState<string | null>(null);
 
   useEffect(() => {
     const seen = localStorage.getItem('echo-has-seen-universe-guide');
@@ -160,54 +156,14 @@ export function UniversePage() {
         </motion.div>
       </div>
 
-      {/* Happening Now Sidebar (Desktop) */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
-        className="hidden xl:block absolute top-48 left-8 z-40 w-72 bg-surface-container-lowest/80 backdrop-blur-2xl rounded-3xl p-space-md border border-outline/20 shadow-2xl"
-      >
-        <div className="flex items-center justify-between mb-space-sm pb-space-xs border-b border-outline/10">
-          <span className="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            HAPPENING NOW
-          </span>
-          <span className="font-label-sm text-xs text-on-surface-variant">{currentEchoesList.length} Live</span>
-        </div>
-        <div className="space-y-space-xs max-h-[320px] overflow-y-auto pr-1">
-          {currentEchoesList.slice(0, 5).map((echo) => {
-            const total = echo.resonance.resonate + echo.resonance.signal + echo.resonance.hold + echo.resonance.ripple;
-            return (
-              <motion.button
-                key={echo.id}
-                onClick={() => handleOrbClick(echo)}
-                whileHover={{ x: 4, backgroundColor: 'rgba(56,189,248,0.1)' }}
-                className="w-full p-space-xs rounded-xl text-left bg-surface-container-low/50 transition-all flex items-center justify-between group border border-transparent hover:border-primary/20"
-                type="button"
-              >
-                <div className="min-w-0 flex-1 pr-2">
-                  <p className="font-body-sm text-xs text-on-surface truncate group-hover:text-primary transition-colors">
-                    {echo.content}
-                  </p>
-                  <span className="font-label-sm text-[10px] text-on-surface-variant">
-                    {total} experiencing
-                  </span>
-                </div>
-                <span className="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-primary transition-colors">
-                  arrow_forward
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
-      </motion.div>
+      
 
       {/* Main Spatial Universe Canvas */}
       <div className="relative flex-1 w-full min-h-[550px]">
         <UniverseCanvas
           activeEchoes={currentEchoesList}
           onOrbClick={handleOrbClick}
-          selectedMood={selectedMood}
+          highlightedEchoId={highlightedEchoId}
         />
       </div>
 
@@ -272,48 +228,7 @@ export function UniversePage() {
         )}
       </AnimatePresence>
 
-      <SocialWeather className="absolute top-28 right-viewport-inset z-40 w-72 hidden lg:block" />
-
-      <UniverseControls
-        activeMood={selectedMood}
-        onMoodChange={setSelectedMood}
-        onDepthToggle={() => setIsDepthEnabled(!isDepthEnabled)}
-        onFilamentsToggle={() => setIsFilamentsEnabled(!isFilamentsEnabled)}
-        onAudioToggle={() => setIsAudioEnabled(!isAudioEnabled)}
-        isDepthEnabled={isDepthEnabled}
-        isFilamentsEnabled={isFilamentsEnabled}
-        isAudioEnabled={isAudioEnabled}
-      />
-
-      <SearchPortal
-        onRelease={handleRelease}
-      />
-
-      <LivePulse />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="absolute bottom-space-lg left-1/2 -translate-x-1/2 z-20 pointer-events-none hidden lg:block"
-      >
-        <div className="bg-surface-container-lowest/80 backdrop-blur-xl rounded-full px-space-lg py-space-xs shadow-2xl flex items-center gap-space-md text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border border-outline/10">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">drag_pan</span>
-            <span>Drag to explore</span>
-          </span>
-          <span className="px-2">·</span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">zoom_in</span>
-            <span>Scroll to zoom</span>
-          </span>
-          <span className="px-2">·</span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">touch_app</span>
-            <span>Click an Echo to enter</span>
-          </span>
-        </div>
-      </motion.div>
+      <UniverseConsole onOrbSelect={setHighlightedEchoId} />
     </div>
   );
 }

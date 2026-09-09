@@ -8,6 +8,7 @@ interface EchoOrbProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   onClick?: () => void;
   isActive?: boolean;
+  isHighlighted?: boolean;
   showPreview?: boolean;
 }
 
@@ -29,7 +30,7 @@ function formatTimeRemaining(expiresAt: number): string {
   return `${minutes}m`;
 }
 
-export function EchoOrb({ echo, size = 'md', onClick, isActive, showPreview = true }: EchoOrbProps) {
+export function EchoOrb({ echo, size = 'md', onClick, isActive, isHighlighted, showPreview = true }: EchoOrbProps) {
   const mood = moodConfig[echo.mood];
   const glowColor = mood?.color || 'var(--color-primary)';
   const totalResonance = echo.resonance.resonate + echo.resonance.signal + echo.resonance.hold + echo.resonance.ripple;
@@ -37,6 +38,8 @@ export function EchoOrb({ echo, size = 'md', onClick, isActive, showPreview = tr
   const orbStyle = {
     '--orb-glow': glowColor,
   } as React.CSSProperties;
+
+  const isEmphasized = isActive || isHighlighted;
 
   return (
     <motion.button
@@ -48,7 +51,7 @@ export function EchoOrb({ echo, size = 'md', onClick, isActive, showPreview = tr
         relative group cursor-pointer flex flex-col items-center
         ${sizeClasses[size]}
         transition-all duration-500
-        ${isActive ? 'scale-110' : ''}
+        ${isEmphasized ? 'scale-110' : ''}
       `}
       style={orbStyle}
       aria-label={`Enter ${echo.type} moment: ${echo.content.slice(0, 50)}...`}
@@ -65,10 +68,10 @@ export function EchoOrb({ echo, size = 'md', onClick, isActive, showPreview = tr
           className={`
             relative rounded-full backdrop-blur-2xl p-[1px] flex flex-col items-center justify-center
             shadow-[0_0_30px_rgba(0,0,0,0.5)]
-            ${isActive ? 'shadow-[0_0_50px_rgba(0,0,0,0.7)] ring-2' : ''}
+            ${isEmphasized ? 'shadow-[0_0_50px_rgba(0,0,0,0.7)] ring-2' : ''}
           `}
           style={{ 
-            borderColor: isActive ? glowColor : 'transparent',
+            borderColor: isEmphasized ? glowColor : 'transparent',
             boxShadow: `0 0 30px ${glowColor}40`,
           }}
           animate={{ 
