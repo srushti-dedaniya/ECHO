@@ -107,9 +107,15 @@ export function UniversePage() {
           </div>
           <div className="flex items-center gap-space-md">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(255,178,185,0.8)]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
+              <span className="relative w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center">
+                <span className="text-[10px]">🌧️</span>
+              </span>
+              <span className="relative w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                <span className="text-[10px]">💧</span>
+              </span>
+              <span className="relative w-6 h-6 rounded-full bg-tertiary/20 flex items-center justify-center">
+                <span className="text-[10px]">🔍</span>
+              </span>
             </div>
             <span className="font-label-sm text-label-sm text-on-surface-variant tracking-wider">
               HARMONIC LOCK 0.941
